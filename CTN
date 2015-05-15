@@ -1,0 +1,56 @@
+from sgmllib import SGMLParser
+import requests
+import csv
+ext=''
+title=''
+time=''
+part=''
+
+
+class ListName(SGMLParser):
+	is_a=""
+	def start_td(self, attrs):
+		for name,value in attrs:
+			if name == 'class':
+				if value == 'a13blue2':
+					self.is_a=1 
+				elif value =='a15red':
+					self.is_a=2 
+				elif value == 'a15gray':
+					self.is_a=3 
+	def end_td(self):
+		self.is_a=""
+	def handle_data(self, text):
+		if self.is_a == 1:
+			if len(text)>4:
+				global time
+				time = text[0:10]
+				li=text.split('/',3)
+				global part
+				part=li[3]
+		elif self.is_a == 2:
+			global title
+			title = text
+		elif self.is_a ==3:
+			global ext
+			ext = ext + text
+
+with open('./ctn-link.txt','r') as f:
+	lParser = ListName()
+	s = requests.Session()
+	s.get('http://kmw.chinatimes.com/member/login_ws.asp?lt=ip&SYS=KMW&on=20100401155455780&gid=')
+	with open( './ctn3.csv', 'wb') as e:
+		writer = csv.writer(e)
+		for line in f:
+			url = line.strip('\n')
+			html=s.get(url)
+			html.encoding='big5'
+			lParser.feed(html.text)
+			lParser.close()
+			data = [(time.encode('utf8'),title.encode('utf8'),part.encode('utf8'),ext.encode('utf8'),url)]
+			writer.writerows(data)
+			ext=''
+			time=''
+			title=''
+			theme=''
+			part=''
