@@ -26,8 +26,10 @@ class ListName(SGMLParser):
 				global time
 				time = text[0:10]
 				li=text.split('/',3)
-				global part
-				part=li[3]
+				if len(li)>3:
+					global part
+					part=li[3]
+				else: part=''
 		elif self.is_a == 2:
 			global title
 			title = text
